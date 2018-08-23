@@ -1,0 +1,94 @@
+--汇总查找 bu sum
+ SELECT wc.fconid
+                  ,t.fnumber
+                   ,SUM(nvl(wbt.fquantity
+                          ,0)) 规划金额
+              FROM wpc_contract_t wc
+                  ,( SELECT a.fbomlistid
+                          ,a.fbomid
+                          ,a.fquantity
+                          ,b.fnumber
+                          ,b.fname
+                          ,b.segment1
+                          ,b.segment2
+                          ,b.segment3
+                          ,b.segment4
+                      
+                      FROM wpc_bomlist_t  a
+                          ,wbd_material_t b
+                     WHERE a.fprdid = b.fprdid
+                       AND a.ftype = '2') t
+                  ,wpc.wpc_bomorderlist_t wbt
+             WHERE (wc.fbomid = t.fbomid OR EXISTS
+                    (SELECT wcct.fconid
+                           ,wcct.fbomid
+                       FROM wpc.wpc_changevisa_t wct
+                           ,wpc_changecontract_t wcct
+                      WHERE wcct.fcvid = wct.fcvid
+                        AND wct.fchangetype IN ('10'
+                                               ,'20')
+                        AND wct.fwflowstate = '20'
+                        AND wcct.fconid = wc.fconid
+                        AND wcct.fbomid = t.fbomid) OR EXISTS
+                    (SELECT 1
+                       FROM wpc.wpc_contract_t wc1
+                      WHERE wc1.fmainconid = wc.fconid
+                        AND wc1.fwflowstate = '20'
+                        AND wc1.fbomid = t.fbomid))
+               AND t.fbomid = wbt.fbomid(+)
+               AND t.fbomlistid = wbt.fbomlistid(+)
+               AND nvl(wc.fcontractproperty
+                      ,'1') <> '2'
+                     and wc.fconid = 179104
+             GROUP BY wc.fconid
+                     ,t.fnumber
+                     
+                    ;
+                    
+--by ditail 按明细查找
+                     SELECT wc.fconid
+                  ,   wc.fname as 主合同名称
+                  ,t.fname as 分类名称
+                  ,t.fnumber as 分类编号
+                ,   wbt.fquantity as  规划金额
+                          
+              FROM wpc_contract_t wc
+                  ,( SELECT a.fbomlistid
+                          
+                          ,a.fbomid
+                          ,a.fquantity
+                          ,b.fnumber
+                          ,b.fname
+                          ,b.segment1
+                          ,b.segment2
+                          ,b.segment3
+                          ,b.segment4
+                      
+                      FROM wpc_bomlist_t  a
+                          ,wbd_material_t b
+                     WHERE a.fprdid = b.fprdid
+                       AND a.ftype = '2') t
+                  ,wpc.wpc_bomorderlist_t wbt
+             WHERE (wc.fbomid = t.fbomid OR EXISTS
+                    (SELECT wcct.fconid
+                           ,wcct.fbomid
+                       FROM wpc.wpc_changevisa_t wct
+                           ,wpc_changecontract_t wcct
+                      WHERE wcct.fcvid = wct.fcvid
+                        AND wct.fchangetype IN ('10'
+                                               ,'20')
+                        AND wct.fwflowstate = '20'
+                        AND wcct.fconid = wc.fconid
+                        AND wcct.fbomid = t.fbomid) OR EXISTS
+                    (SELECT 1
+                       FROM wpc.wpc_contract_t wc1
+                      WHERE wc1.fmainconid = wc.fconid
+                        AND wc1.fwflowstate = '20'
+                        AND wc1.fbomid = t.fbomid))
+               AND t.fbomid = wbt.fbomid(+)
+               AND t.fbomlistid = wbt.fbomlistid(+)
+               AND nvl(wc.fcontractproperty
+                      ,'1') <> '2'
+                     and wc.fconid = 179104
+                     and t.fnumber='34.01.01'
+        ;

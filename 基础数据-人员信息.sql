@@ -1,0 +1,1 @@
+SELECT * FROM cux_hr_employees_info t WHERE t.person_id = 3402;
